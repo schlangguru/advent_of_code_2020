@@ -10,7 +10,16 @@ class TestDay01(unittest.TestCase):
             "2-9 c: ccccccccc"
         ]
 
-        self.assertEqual(day02.get_number_of_valid_passwords(lines), 2)
+        self.assertEqual(day02.part01(lines), 2)
+
+    def test_part02(self):
+        lines = [
+            "1-3 a: abcde",
+            "1-3 b: cdefg",
+            "2-9 c: ccccccccc"
+        ]
+
+        self.assertEqual(day02.part02(lines), 1)
 
 
 if __name__ == '__main__':
