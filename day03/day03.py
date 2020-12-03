@@ -8,16 +8,23 @@ SLOPE = []
 CURRENT_POS = [0, 0]
 
 def move(x, y):
+    """
+    Move the current postion x to right and y down.
+    """
     CURRENT_POS[0] = (CURRENT_POS[0] + x) % len(SLOPE[0])
     CURRENT_POS[1] += y
 
-
-
 def is_tree():
+    """
+    Checks if there is a tree at the current positon.
+    """
     char = SLOPE[CURRENT_POS[1]][CURRENT_POS[0]]
     return char == TREE
 
 def is_at_end():
+    """
+    Checks if the sled is at the and of the slope.
+    """
     return CURRENT_POS[1] >= len(SLOPE)
 
 def part01(slope):
