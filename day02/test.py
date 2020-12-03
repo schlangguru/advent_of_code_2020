@@ -2,7 +2,7 @@ import unittest
 
 import day02
 
-class TestDay01(unittest.TestCase):
+class TestDay02(unittest.TestCase):
     def test_part01(self):
         lines = [
             "1-3 a: abcde",
