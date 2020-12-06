@@ -1,19 +1,23 @@
 import os
 import re
+from functools import reduce
+from operator import add
 
 def parse_answers(input):
-    group_answers = [re.sub(r"\s", "", x) for x in input.split("\n\n")]
-    return sum(list(map(count_group_answers, group_answers)))
+    group_answers = input.split("\n\n")
+    return list(map(parse_group_answers, group_answers))
 
-def count_group_answers(answers):
-    return len(set(answers))
+def parse_group_answers(input):
+    return [answer.strip() for answer in input.split("\n") if len(answer) > 0]
 
-def remove_duplicates(from_list):
-    return set(from_list)
-
+def count_any_group_yes(group_answers):
+    combined_answers = reduce(add, group_answers, "")
+    return len(set(combined_answers))
 
 def part01(input):
-    return parse_answers(input)
+    answers = parse_answers(input)
+    return sum(map(count_any_group_yes, answers))
+
 
 def main():
     working_dir = os.path.dirname(__file__)
