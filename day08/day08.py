@@ -5,21 +5,21 @@ import sys
 sys.path.append("util")
 
 from decorators import benchmark
-from emulation import Status, Emulator
+from emulation import Status, Emulator, Instruction
 
 INSRUCTION_PATTERN = re.compile(r"(\w+) ([+-]\d+)")
 
-def parse_instructions(lines: List[str]) -> List[Tuple[str, int]]:
+def parse_instructions(lines: List[str]) -> List[Instruction]:
     return list(map(parse_instruction, lines))
 
-def parse_instruction(line: str) -> Tuple[str, int]:
+def parse_instruction(line: str) -> Instruction:
     match = INSRUCTION_PATTERN.match(line)
     if match:
         return (match.group(1), int(match.group(2)))
 
     raise Exception(f"Instruction {line} did not match pattern {INSRUCTION_PATTERN}")
 
-def fixes(instructions: List[Tuple[str, int]]):
+def fixes(instructions: List[Instruction]):
     """
     Generator that applies fixes to the given instructions.
     """

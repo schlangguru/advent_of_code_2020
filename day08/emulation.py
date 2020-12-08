@@ -1,18 +1,19 @@
 from typing import List, Tuple, Dict
 from enum import Enum
 
+# Type aliases
+Instruction = Tuple[str, int]
 class Status(Enum):
     NOT_STARTED = "not-started"
     RUNNING = "running"
     LOOP = "loop"
     FINISHED = "finished"
 
-
 class Emulator():
     """
     The Emulator executes Handheld Console bootcode in isolation.
     """
-    def __init__(self, instructions: List[Tuple[str, int]]):
+    def __init__(self, instructions: List[Instruction]):
         self.status = Status.NOT_STARTED
         self.instruction_pointer = 0
         self.instructions = instructions
