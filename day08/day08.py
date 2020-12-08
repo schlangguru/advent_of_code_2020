@@ -1,7 +1,10 @@
 import os
 import re
 from typing import List, Tuple, Dict
+import sys
+sys.path.append("util")
 
+from decorators import benchmark
 from emulation import Status, Emulator
 
 INSRUCTION_PATTERN = re.compile(r"(\w+) ([+-]\d+)")
@@ -33,7 +36,7 @@ def fixes(instructions: List[Tuple[str, int]]):
 
             yield fixed_instructions
 
-
+@benchmark
 def part01(lines):
     instructions = parse_instructions(lines)
     emulator = Emulator(instructions)
@@ -43,6 +46,7 @@ def part01(lines):
         "accumulator": emulator.accumulator
     }
 
+@benchmark
 def part02(lines):
     instructions = parse_instructions(lines)
     emulator = Emulator(instructions)
