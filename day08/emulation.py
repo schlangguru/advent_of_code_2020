@@ -47,7 +47,7 @@ class Emulator():
 
     def execute_instruction(self):
         """
-        Executes the instruction the instruction the pointer currently point to.
+        Executes the instruction to which the instruction_pointer currently points.
         Moves the instruction_pointer to the next instruction.
         """
         (operation, value) = self.instructions[self.instruction_pointer]
