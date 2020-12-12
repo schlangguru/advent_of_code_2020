@@ -16,7 +16,7 @@ def part01(seats: List[List[chr]]):
     while len(applied_updates) > 0:
         applied_updates = simulator.simulate_round()
 
-    return simulator.seat_plan.count(OCCUPIED_SEAT)
+    return simulator.seat_plan.count_occupied()
 
 
 @benchmark
@@ -26,7 +26,7 @@ def part02(seats: List[List[chr]]):
     while len(applied_updates) > 0:
         applied_updates = simulator.simulate_round()
 
-    return simulator.seat_plan.count(OCCUPIED_SEAT)
+    return simulator.seat_plan.count_occupied()
 
 
 def main(input_file: str = "input.txt"):

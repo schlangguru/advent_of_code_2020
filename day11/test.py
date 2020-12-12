@@ -2,7 +2,7 @@ import os
 import unittest
 
 import day11
-import simulation
+from simulation import SeatPlanSimulator, SeatPlan, Seat
 
 class TestSeatPlan(unittest.TestCase):
 
@@ -14,11 +14,11 @@ class TestSeatPlan(unittest.TestCase):
             "."
         ]
 
-        seat_plan1 = simulation.SeatPlan(data1)
+        seat_plan1 = SeatPlan(data1)
         self.assertEqual(seat_plan1.width, 3)
         self.assertEqual(seat_plan1.height, 1)
 
-        seat_plan2 = simulation.SeatPlan(data2)
+        seat_plan2 = SeatPlan(data2)
         self.assertEqual(seat_plan2.width, 1)
         self.assertEqual(seat_plan2.height, 3)
 
@@ -31,81 +31,34 @@ class TestSeatPlan(unittest.TestCase):
             "."
         ]
 
-        seat_plan = simulation.SeatPlan(data1)
-        self.assertEqual(seat_plan.get((0, 0)), '.')
-        self.assertEqual(seat_plan.get((1, 0)), 'L')
-        self.assertEqual(seat_plan.get((2, 0)), '.')
+        seat_plan = SeatPlan(data1)
+        self.assertEqual(seat_plan.get((0, 0)), None)
+        self.assertEqual(seat_plan.get((1, 0)).is_occupied, False)
+        self.assertEqual(seat_plan.get((2, 0)), None)
 
-        seat_plan = simulation.SeatPlan(data2)
-        self.assertEqual(seat_plan.get((0, 0)), '.')
-        self.assertEqual(seat_plan.get((0, 1)), 'L')
-        self.assertEqual(seat_plan.get((0, 2)), '.')
+        seat_plan = SeatPlan(data2)
+        self.assertEqual(seat_plan.get((0, 0)), None)
+        self.assertEqual(seat_plan.get((0, 1)).is_occupied, False)
+        self.assertEqual(seat_plan.get((0, 2)), None)
 
 
-    def test_adjacent_seats1(self):
+    def test_adjacent_seats(self):
         data = read("input.test.txt")
-        seat_plan = simulation.SeatPlan(data)
+        seat_plan = SeatPlan(data)
 
         # Seat in plan
-        self.assertEqual(seat_plan.adjacent_seats((1, 1)), ['L', '.', 'L', 'L', 'L', 'L', '.', 'L'])
+        l = list(map(lambda s: s.is_occupied, seat_plan.get((1, 1)).adjacent_seats))
+        self.assertEqual(l, [False, False, False, False, False, False])
 
         # Corners
-        self.assertEqual(seat_plan.adjacent_seats((0, 0)), ['.', 'L', 'L'])
-        self.assertEqual(seat_plan.adjacent_seats((seat_plan.width-1, 0)), ['L', 'L', 'L'])
-        self.assertEqual(seat_plan.adjacent_seats((0, seat_plan.height-1)), ['L', '.', '.'])
-        self.assertEqual(seat_plan.adjacent_seats((seat_plan.width-1, seat_plan.height-1)), ['.', 'L', 'L'])
-
-
-    def test_adjacent_seats2(self):
-        data = [
-            "L"
-        ]
-
-        seat_plan = simulation.SeatPlan(data)
-
-        self.assertEqual(seat_plan.adjacent_seats((0, 0)), [])
-
-
-    def test_adjacent_seats3(self):
-        data1 = [".L."]
-        data2 = [
-            ".",
-            "L",
-            "."
-        ]
-
-        seat_plan1 = simulation.SeatPlan(data1)
-        self.assertEqual(seat_plan1.adjacent_seats((0, 0)), ['L'])
-        self.assertEqual(seat_plan1.adjacent_seats((1, 0)), ['.', '.'])
-        self.assertEqual(seat_plan1.adjacent_seats((2, 0)), ['L'])
-
-        seat_plan2 = simulation.SeatPlan(data2)
-        self.assertEqual(seat_plan2.adjacent_seats((0, 0)), ['L'])
-        self.assertEqual(seat_plan2.adjacent_seats((0, 1)), ['.', '.'])
-        self.assertEqual(seat_plan2.adjacent_seats((0, 2)), ['L'])
-
-
-    def test_line_of_sight(self):
-        data = [
-            "↖..↑..↗",
-            ".↖.↑.↗.",
-            "-.↖↑↗..",
-            "←←←L→→→",
-            "-.↙↓↘..",
-            "-↙.↓.↘.",
-            "↙..↓..↘"
-        ]
-
-        seat_plan = simulation.SeatPlan(data)
-        pos = (3, 3)
-        self.assertEqual(seat_plan.line_of_sight(pos, 'U'), ['↑', '↑', '↑'])
-        self.assertEqual(seat_plan.line_of_sight(pos, 'D'), ['↓', '↓', '↓'])
-        self.assertEqual(seat_plan.line_of_sight(pos, 'L'), ['←', '←', '←'])
-        self.assertEqual(seat_plan.line_of_sight(pos, 'R'), ['→', '→', '→'])
-        self.assertEqual(seat_plan.line_of_sight(pos, 'UR'), ['↗', '↗', '↗'])
-        self.assertEqual(seat_plan.line_of_sight(pos, 'DR'), ['↘', '↘', '↘'])
-        self.assertEqual(seat_plan.line_of_sight(pos, 'UL'), ['↖', '↖', '↖'])
-        self.assertEqual(seat_plan.line_of_sight(pos, 'DL'), ['↙', '↙', '↙'])
+        l = list(map(lambda s: s.is_occupied, seat_plan.get((0, 0)).adjacent_seats))
+        self.assertEqual(l, [False, False])
+        l = list(map(lambda s: s.is_occupied, seat_plan.get((seat_plan.width-1, 0)).adjacent_seats))
+        self.assertEqual(l, [False, False, False])
+        l = list(map(lambda s: s.is_occupied, seat_plan.get((0, seat_plan.height-1)).adjacent_seats))
+        self.assertEqual(l, [False])
+        l = list(map(lambda s: s.is_occupied, seat_plan.get((seat_plan.width-1, seat_plan.height-1)).adjacent_seats))
+        self.assertEqual(l, [False, False])
 
 
     def test_nearest_seats1(self):
@@ -114,41 +67,16 @@ class TestSeatPlan(unittest.TestCase):
             "...#.....",
             ".#.......",
             ".........",
-            "..#L....#",
+            "..#L....L",
             "....#....",
             ".........",
             "#........",
             "...#....."
         ]
 
-        seat_plan = simulation.SeatPlan(data)
-        self.assertEqual(seat_plan.nearest_seats((3, 4)), ['#', '#', '#', '#', '#', '#', '#', '#'])
-
-
-    def test_nearest_seats2(self):
-        data = [
-            ".............",
-            ".L.L.#.#.#.#.",
-            ".............",
-        ]
-
-        seat_plan = simulation.SeatPlan(data)
-        self.assertEqual(seat_plan.nearest_seats((1, 1)), ['L'])
-
-
-    def test_nearest_seats3(self):
-        data = [
-            ".##.##.",
-            "#.#.#.#",
-            "##...##",
-            "...L...",
-            "##...##",
-            "#.#.#.#",
-            ".##.##."
-        ]
-
-        seat_plan = simulation.SeatPlan(data)
-        self.assertEqual(seat_plan.nearest_seats((3, 3)), [])
+        seat_plan = SeatPlan(data)
+        l = list(map(lambda s: s.is_occupied, seat_plan.get((3, 4)).nearest_seats))
+        self.assertEqual(l, [True, True, False, True, True, True, True, True])
 
 
 class TestDay11(unittest.TestCase):

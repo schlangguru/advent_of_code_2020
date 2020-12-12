@@ -5,89 +5,73 @@ OCCUPIED_SEAT = '#'
 EMPTY_SEAT = 'L'
 FLOOR = '.'
 
+class Seat():
+
+    allowed_types = (OCCUPIED_SEAT, EMPTY_SEAT)
+
+    def __init__(self, type: chr):
+        if type not in self.allowed_types:
+            raise Exception(f"Type {type} not allowed.")
+
+        self.is_occupied = type == OCCUPIED_SEAT
+        self.adjacent_seats: List[Seat] = []
+        self.nearest_seats: List[Seat] = []
+
+
 class SeatPlan():
 
     def __init__(self, plan: List[List[chr]]):
-        self.plan = plan
-
-    @property
-    def height(self) -> int:
-        """
-        Height of the seat plan.
-        """
-        return len(self.plan)
-
-    @property
-    def width(self) -> int:
-        """
-        Width of the seat plan.
-        """
-        return len(self.plan[0])
+        self.plan: List[List[Seat]] = [[None for i in range(len(plan[0]))] for i in range(len(plan))]
+        self.init_seats(plan)
+        self.set_adjacent_seats()
+        self.set_nearest_seats()
 
 
-    def adjacent_seats(self, seat_position: Tuple[int, int]) -> List[str]:
-        """
-        Retruns a list of adjacent seats to the given seat.
-        Adjacent seats are order from left to right and top to bottom.
-        """
-        (x, y) = seat_position
-        result = []
-        y_range = (max(0, y-1), min(self.height, y+2)) # upper bound is exclusive
-        x_range = (max(0, x-1), min(self.width, x+2)) # upper bound is exclusive
-        for j in range(*y_range):
-            for i in range(*x_range):
-                if seat_position != (i, j):
-                    result.append(self.get((i, j)))
-
-        return result
-
-    def nearest_seats(self, seat_position: Tuple[int, int]) -> List[str]:
-        """
-        Returns a list of seats that are first in sight of each direction from the given seat_position.
-        """
-        result = []
-        for direction in ['U', 'UR', 'R', 'DR', 'D', 'DL', 'L', 'UL']:
-            line = self.line_of_sight(seat_position, direction)
-            nearest_seat = next((s for s in line if s != '.'), None)
-            if nearest_seat:
-                result.append(nearest_seat)
-
-        return result
+    def init_seats(self, plan: List[List[chr]]):
+       for y in range(len(plan)):
+            for x in range(len(plan[0])):
+                char = plan[y][x]
+                if char in ('#', 'L'):
+                    self.plan[y][x] = Seat(char)
+                else:
+                    self.plan[y][x] = None
 
 
-    def get(self, seat_position: Tuple[int, int]) -> chr:
+    def set_adjacent_seats(self):
         """
-        Returns the seat at the given positon.
+        Sets the adjacent seats for each seat in the plan.
         """
-        (x, y) = seat_position
-        return self.plan[y][x]
+        for seat_position in self.traverse():
+            seat = self.get(seat_position)
+            if not seat:
+                continue
 
-    def set(self, seat_position: Tuple[int, int], seat: chr):
-        """
-        Changes the seat at the given positoin.
-        Raises an exception if the given position is floor.
-        """
-        (x, y) = seat_position
-        if self.get((x, y)) == FLOOR:
-            raise Exception(f"Cannot change {seat_position}. It is floor.")
-        if seat != OCCUPIED_SEAT and seat != EMPTY_SEAT:
-            raise Exception(f"Cannot set {seat}. Not an allowed value.")
-
-        self.plan[y][x] = seat
+            for xy in ((-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1)):
+                adjacent_pos = (seat_position[0] + xy[0], seat_position[1] + xy[1])
+                if self.is_in_plan(adjacent_pos):
+                    adjacent_seat = self.get(adjacent_pos)
+                    if adjacent_seat:
+                        seat.adjacent_seats.append(adjacent_seat)
 
 
-    def traverse(self) -> Tuple[int, int]:
+    def set_nearest_seats(self):
         """
-        Generator to traverse the seat plan.
-        Iterates through all positions in the plan
+        Sets the list of nearest seats in sight for each seat in the plan.
         """
-        for x in range(0, self.width):
-            for y in range(0, self.height):
-                yield (x, y)
+        for seat_position in self.traverse():
+            seat = self.get(seat_position)
+            if not seat:
+                continue
 
-    def line_of_sight(self, seat_position: Tuple[int, int], direction: str) -> List[chr]:
+            for direction in ['U', 'UR', 'R', 'DR', 'D', 'DL', 'L', 'UL']:
+                nearest_seat = self.nearest_seat(seat_position, direction)
+                if nearest_seat:
+                    seat.nearest_seats.append(nearest_seat)
+
+
+    def nearest_seat(self, seat_position: Tuple[int, int], direction: str) -> List[chr]:
         """
-        Returns a list of seats that are in the line of sight from seat_position to direction.
+        Returns the nearest seat that is in the line of sight from seat_position to direction.
         Allowed directions are:
         - U: up
         - R: right
@@ -98,18 +82,17 @@ class SeatPlan():
         - UL: diagnoal up - left
         - DL: diagonal down - left
         """
-        result = []
-        pos = self.go_to_direction(seat_position, direction)
+        pos = self.go_in_direction(seat_position, direction)
         while self.is_in_plan(pos):
-            s = self.get(pos)
-            result.append(s)
-            if s == '#' or s == 'L':
-                break
-            pos = self.go_to_direction(pos, direction)
+            seat = self.get(pos)
+            if seat:
+                return seat
+            pos = self.go_in_direction(pos, direction)
 
-        return result
+        return None
 
-    def go_to_direction(self, seat_position: Tuple[int, int], direction: str) -> Tuple[int, int]:
+
+    def go_in_direction(self, seat_position: Tuple[int, int], direction: str) -> Tuple[int, int]:
         (x, y) = seat_position
         if 'U' in direction:
             y -= 1
@@ -122,21 +105,48 @@ class SeatPlan():
 
         return (x, y)
 
+
     def is_in_plan(self, seat_position: Tuple[int, int]) -> bool:
         (x, y) = seat_position
         return (0 <= x and x < self.width) and (0 <= y and y < self.height)
 
-    def count(self, seat: chr):
-        return len([1 for pos in self.traverse() if self.get(pos) == seat])
+
+    @property
+    def height(self) -> int:
+        """
+        Height of the seat plan.
+        """
+        return len(self.plan)
 
 
-    def __repr__(self):
-        result = ""
-        for row in self.plan:
-            result += "".join(row)
-            result += "\n"
+    @property
+    def width(self) -> int:
+        """
+        Width of the seat plan.
+        """
+        return len(self.plan[0])
 
-        return result
+
+    def get(self, seat_position: Tuple[int, int]) -> Seat:
+        """
+        Returns the seat at the given positon.
+        """
+        (x, y) = seat_position
+        return self.plan[y][x]
+
+
+    def traverse(self) -> Tuple[int, int]:
+        """
+        Generator to traverse the seat plan.
+        Iterates through all positions in the plan
+        """
+        for x in range(0, self.width):
+            for y in range(0, self.height):
+                yield (x, y)
+
+
+    def count_occupied(self):
+        return len([1 for pos in self.traverse() if self.get(pos) and self.get(pos).is_occupied])
 
 
 class SeatPlanSimulator():
@@ -148,6 +158,7 @@ class SeatPlanSimulator():
             "part02": self._apply_rules_part02,
         }
         self.rule_set = rule_sets[rule_set]
+
 
     def simulate_round(self) -> Tuple[Tuple[int, int]]:
         """
@@ -161,23 +172,24 @@ class SeatPlanSimulator():
                 updates.append(update)
 
         for update in updates:
-            (seat_position, seat) = update
-            self.seat_plan.set(seat_position, seat)
+            (seat_position, occupy) = update
+            self.seat_plan.get(seat_position).is_occupied = occupy
 
         return updates
+
 
     def _apply_rules_part01(self, seat_position: Tuple[int, int]) -> Tuple[Tuple[int, int], chr]:
         """
         Occupies or empties the seat according to the rules.
         """
         seat = self.seat_plan.get(seat_position)
-        adj_seats = self.seat_plan.adjacent_seats(seat_position)
-        if seat == EMPTY_SEAT:
-            if adj_seats.count(OCCUPIED_SEAT) == 0:
-                return (seat_position, OCCUPIED_SEAT)
-        elif seat == OCCUPIED_SEAT:
-            if adj_seats.count(OCCUPIED_SEAT) >= 4:
-                return (seat_position, EMPTY_SEAT)
+        if seat:
+            if seat.is_occupied:
+                if len(list(filter(lambda s: s.is_occupied, seat.adjacent_seats))) >= 4:
+                    return (seat_position, False)
+            else:
+                if len(list(filter(lambda s: s.is_occupied, seat.adjacent_seats))) == 0:
+                    return (seat_position, True)
 
         None
 
@@ -187,13 +199,13 @@ class SeatPlanSimulator():
         Occupies or empties the seat according to the rules.
         """
         seat = self.seat_plan.get(seat_position)
-        nearest_seats = self.seat_plan.nearest_seats(seat_position)
-        if seat == EMPTY_SEAT:
-            if nearest_seats.count(OCCUPIED_SEAT) == 0:
-                return (seat_position, OCCUPIED_SEAT)
-        elif seat == OCCUPIED_SEAT:
-            if nearest_seats.count(OCCUPIED_SEAT) >= 5:
-                return (seat_position, EMPTY_SEAT)
+        if seat:
+            if seat.is_occupied:
+                if len(list(filter(lambda s: s.is_occupied, seat.nearest_seats))) >= 5:
+                    return (seat_position, False)
+            else:
+                if len(list(filter(lambda s: s.is_occupied, seat.nearest_seats)))== 0:
+                    return (seat_position, True)
 
         None
 
