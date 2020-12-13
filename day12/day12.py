@@ -8,7 +8,7 @@ sys.path.append("util")
 from decorators import benchmark
 import util
 
-from ship import Ship
+from ship import ShipPart01, ShipPart02
 
 ACTION_PATTEN = re.compile(r"(\w)(\d+)")
 
@@ -25,7 +25,7 @@ def parse_action(input: str) -> Tuple[chr, int]:
 @benchmark
 def part01(actions: List[str]):
     actions = parse_actions(actions)
-    ship = Ship()
+    ship = ShipPart01()
     for action, value in actions:
         ship.action(action, value)
 
@@ -34,7 +34,12 @@ def part01(actions: List[str]):
 
 @benchmark
 def part02(actions: List[str]):
-    pass
+    actions = parse_actions(actions)
+    ship = ShipPart02()
+    for action, value in actions:
+        ship.action(action, value)
+
+    return ship.manhattan_distance
 
 
 def main(input_file: str = "input.txt"):
@@ -46,7 +51,7 @@ def main(input_file: str = "input.txt"):
         actions = [line.strip() for line in f.readlines()]
 
     print(f"Part01 - Manhattan distance {part01(copy.deepcopy(actions))}")
-    # print(f"Part02 - Result {part02(copy.deepcopy(actions))}")
+    print(f"Part02 - Manhattan distance {part02(copy.deepcopy(actions))}")
 
 
 if __name__ == "__main__":
