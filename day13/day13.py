@@ -1,6 +1,7 @@
 import os
 import copy
 import re
+import itertools
 from typing import List, Tuple, Dict
 
 import sys
@@ -12,7 +13,7 @@ from bus import Bus
 
 @benchmark
 def part01(my_earliest_departure: int, bus_ids: List[int]):
-    busses = [Bus(id) for id in bus_ids]
+    busses = [Bus(id) for id in map(lambda id: int(id), filter(lambda id: id != 'x', bus_ids))]
 
     def nearest_departure(bus: Bus) -> int:
         return next(time for time in bus.departure_times() if time >= my_earliest_departure)
@@ -29,9 +30,22 @@ def part01(my_earliest_departure: int, bus_ids: List[int]):
 
 
 @benchmark
-def part02(my_earliest_departure: int, bus_ids: List[int]):
-    pass
+def part02(bus_ids: List[int]):
+    offsets = []
+    for idx, id in enumerate(bus_ids):
+        if id != 'x':
+            offsets.append(idx)
 
+    bus_ids = list(map(lambda id: int(id), filter(lambda id: id != 'x', bus_ids)))
+
+    timestamp = 0
+    step = 1
+    for (bus_id, offset) in zip(bus_ids, offsets):
+        while (timestamp + offset) % bus_id != 0:
+            timestamp += step
+        step *= bus_id
+
+    return timestamp
 
 def main(input_file: str = "input.txt"):
     working_dir = os.path.dirname(__file__)
@@ -42,9 +56,10 @@ def main(input_file: str = "input.txt"):
         lines = [line.strip() for line in f.readlines()]
 
     my_earliest_departure = int(lines[0])
-    bus_ids = list(map(lambda id: int(id), filter(lambda id: id != 'x', lines[1].split(','))))
+    bus_ids = lines[1].split(',')
 
     print(f"Part01 - Result {part01(my_earliest_departure, copy.deepcopy(bus_ids))}")
+    print(f"Part02 - Result {part02(copy.deepcopy(bus_ids))}")
 
 
 if __name__ == "__main__":
