@@ -8,25 +8,31 @@ sys.path.append("util")
 from decorators import benchmark
 import util
 
+from emulation import Emulator
+
 
 @benchmark
-def part01(actions: List[str]):
-    pass
+def part01(instructions: List[str]):
+    emulator = Emulator(instructions)
+    emulator.run()
+
+    return sum(emulator.mem.values())
+
 
 @benchmark
-def part02(actions: List[str]):
+def part02(instructions: List[str]):
     pass
 
 def main(input_file: str = "input.txt"):
     working_dir = os.path.dirname(__file__)
     input = os.path.join(working_dir, input_file)
 
-    actions = []
+    instructions = []
     with open(input, 'r') as f:
-        actions = [line.strip() for line in f.readlines()]
+        instructions = [line.strip() for line in f.readlines()]
 
-    print(f"Part01 - Manhattan distance {part01(copy.deepcopy(actions))}")
-    print(f"Part02 - Manhattan distance {part02(copy.deepcopy(actions))}")
+    print(f"Part01 - Result {part01(copy.deepcopy(instructions))}")
+    #print(f"Part02 - Manhattan distance {part02(copy.deepcopy(actions))}")
 
 
 if __name__ == "__main__":
