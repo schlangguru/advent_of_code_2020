@@ -20,6 +20,13 @@ class TestTicketRule(unittest.TestCase):
         self.assertEqual(rule.is_valid(8), False)
 
 
+    def test_all_valid(self):
+        rule = train_ticket.TicketRule("test", (0, 3), (5, 7))
+
+        self.assertEqual(rule.all_valid(0, 1, 3, 5, 6, 7), True)
+        self.assertEqual(rule.all_valid(0, 1, 3, 4, 5, 6, 7), False)
+
+
 class TestTicket(unittest.TestCase):
 
     def test_invalid_values(self):
@@ -51,7 +58,21 @@ class TestDay16(unittest.TestCase):
 
 
     def test_part02(self):
-        pass
+        input = """
+            class: 0-1 or 4-19
+            row: 0-5 or 8-19
+            seat: 0-13 or 16-19
+
+            your ticket:
+            11,12,13
+
+            nearby tickets:
+            3,9,18
+            15,1,5
+            5,14,9
+        """
+
+        self.assertEqual(day16.part02(*day16.parse_input(input)), 1)
 
 
 if __name__ == '__main__':

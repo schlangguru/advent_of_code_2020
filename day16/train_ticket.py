@@ -32,6 +32,14 @@ class TicketRule():
         return is_valid
 
 
+    def all_valid(self, *values: int) -> bool:
+        all_valid = True
+        for value in values:
+            all_valid = all_valid and self.is_valid(value)
+
+        return all_valid
+
+
     def __repr__(self) -> str:
         return f"Ticket Rule: {self.name}: {[rng for rng in self.ranges]}"
 
@@ -53,6 +61,10 @@ class Ticket():
             valid_values += [val for val in self.values if rule.is_valid(val)]
 
         return [val for val in self.values if val not in valid_values]
+
+
+    def is_valid(self, *rules: TicketRule) -> bool:
+        return len(self.invalid_values(*rules)) == 0
 
 
     def __repr__(self) -> str:
