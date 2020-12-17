@@ -9,15 +9,18 @@ from pocket_dimension import PocketDimension
 
 @benchmark
 def part01(initial_state: str):
-    dimension = PocketDimension(initial_state)
+    dimension = PocketDimension(initial_state, dimensions=3)
     dimension.boot()
 
     return dimension.active_cube_count()
 
 
 @benchmark
-def part02(start_numbers: List[int], turns=30_000_000):
-    pass
+def part02(initial_state: str):
+    dimension = PocketDimension(initial_state, dimensions=4)
+    dimension.boot()
+
+    return dimension.active_cube_count()
 
 
 def main(input_file: str = "input.txt"):
@@ -29,7 +32,7 @@ def main(input_file: str = "input.txt"):
         initial_state = f.read().strip()
 
     print(f"Part01 - Result: {part01(initial_state)}")
-    #print(f"Part02 - Result: {part02(initial_state)}")
+    print(f"Part02 - Result: {part02(initial_state)}")
 
 
 if __name__ == "__main__":
