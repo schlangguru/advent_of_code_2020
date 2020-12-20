@@ -46,14 +46,22 @@ def part01(input: str):
     rules, messages = parse_input(input)
     matcher = RuleMatcher(rules)
 
-    valid_msgs = list(filter(matcher.matches_rule, messages))
+    valid_msgs = list(filter(matcher.match, messages))
 
     return len(valid_msgs)
 
 
 @benchmark
 def part02(input: str):
-    pass
+    rules, messages = parse_input(input)
+    matcher = RuleMatcher(rules)
+
+    rules[8] = parse_rule("8: 42 | 42 8")[1]
+    rules[11] = parse_rule("11: 42 31 | 42 11 31")[1]
+
+    valid_msgs = list(filter(matcher.match, messages))
+
+    return len(valid_msgs)
 
 
 def main(input_file: str = "input.txt"):
@@ -65,7 +73,7 @@ def main(input_file: str = "input.txt"):
         content = f.read()
 
     print(f"Part01 - Result: {part01(content)}")
-    #print(f"Part02 - Result: {part02(expressions)}")
+    print(f"Part02 - Result: {part02(content)}")
 
 
 if __name__ == "__main__":

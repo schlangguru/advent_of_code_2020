@@ -9,31 +9,28 @@ class RuleMatcher():
         self.rules = rules
 
 
-    def matches_rule(self, message: str) -> bool:
-        msg = list(message)
-        result = self._matches_rule(self.rules[0], msg)
-        return result and len(msg) == 0
+    def match(self, message: str) -> bool:
+        return any(msg == "" for msg in self._match_terminal(self.rules[0], message))
 
 
-    def _matches_rule(self, rule: Rule, message: List[chr]) -> bool:
-        if type(rule) is str:
-            c = message.pop(0)
-            return c == rule
+    def _match_terminal(self, rule: Rule, message: str) -> str:
+        if type(rule) is list:
+            yield from self._match_any(rule, message)
         else:
-            result = False
-            match_count = 0
-            for sub_rules in rule:
-                msg = message.copy()
-                and_result = True
-                for sub_rule in sub_rules:
-                    and_result = and_result and self._matches_rule(self.rules[sub_rule], msg)
-                result = result or and_result
-                match_count = max(match_count, len(message) - len(msg))
+            if message and message[0] == rule:
+                yield message[1:]
 
-            if result:
-                for _ in range(match_count):
-                    message.pop(0)
 
-            return result
+    def _match_any(self, rule: Rule, message: str) -> str:
+        for branch in rule:
+            yield from self._match_all(branch, message)
 
+
+    def _match_all(self, rule: List[int], message: str) -> str:
+        if not rule:
+            yield message
+        else:
+            [rule_ref, *rest] = rule
+            for substring in self._match_terminal(self.rules[rule_ref], message):
+                yield from self._match_all(rest, substring)
 
