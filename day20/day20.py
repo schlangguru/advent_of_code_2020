@@ -12,14 +12,26 @@ import puzzle
 @benchmark
 def part01(input: str):
     tiles = puzzle.parse_tiles(input)
-    corners = puzzle.find_corner_tiles(tiles)
 
-    return math.prod(map(lambda tile: int(tile.id), corners))
+    return math.prod(map(lambda tile: int(tile.id), puzzle.find_corner_tiles(tiles)))
 
 
 @benchmark
 def part02(input: str):
-    pass
+    tiles = puzzle.parse_tiles(input)
+    image = puzzle.build_puzzle(tiles)
+
+    # Find monster
+    monster_count = 0
+    for image_variation in image.as_tile().variations():
+        monster_count = puzzle.count_monster(image_variation.tile)
+        if monster_count > 0:
+            print("Found # Monsters", monster_count)
+            break
+
+    number_of_hash = "".join(image_variation.tile).count('#')
+
+    return number_of_hash - (monster_count * 15)
 
 
 def main(input_file: str = "input.txt"):
@@ -30,8 +42,8 @@ def main(input_file: str = "input.txt"):
     with open(input, 'r') as f:
         content = f.read()
 
-    print(f"Part01 - Result: {part01(content)}")
-    # print(f"Part02 - Result: {part02(content)}")
+    # print(f"Part01 - Result: {part01(content)}")
+    print(f"Part02 - Result: {part02(content)}")
 
 
 if __name__ == "__main__":
